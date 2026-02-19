@@ -1,0 +1,20 @@
+# Override para desenvolvimento: monta o código local para hot reload.
+# Usado automaticamente ao rodar: docker compose up
+# Proxy na porta 8081 para não conflitar com 80 ou 8080 (outros projetos).
+
+services:
+  proxy:
+    ports:
+      - "8081:80"
+  frontend:
+    volumes:
+      - ./app/frontend:/app
+      - /app/node_modules   # mantém node_modules do container (evita conflito com o do host)
+    # Vite já usa HMR; alterações no código aplicam na hora no browser
+
+  backend:
+    volumes:
+      - ./app/backend:/app
+      - /app/node_modules   # mantém node_modules do container
+    command: sh -c "npx prisma generate && npm run start:dev -- --watch"
+    # Prisma generate ao subir (necessário com volume montado); Nest --watch aplica alterações

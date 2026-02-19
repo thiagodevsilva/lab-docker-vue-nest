@@ -1,6 +1,10 @@
 # Configuração do Nginx para Lab Docker Vue Nest
-# Este arquivo deve ser copiado para /etc/nginx/sites-available/lab-app
-# e criado um symlink em /etc/nginx/sites-enabled/
+# Copiar para /etc/nginx/sites-available/lab-docker-vue-nest
+# Symlink: sudo ln -s /etc/nginx/sites-available/lab-docker-vue-nest /etc/nginx/sites-enabled/
+#
+# Certificado: usa o de thiagosilva.dev.br.
+# Só vale para subdomínios se for wildcard (*.thiagosilva.dev.br).
+# Se não for, gere um cert só para estes: certbot certonly --nginx -d status-sistem.thiagosilva.dev.br -d api.status-sistem.thiagosilva.dev.br
 
 # ============================================
 # APLICAÇÃO: Lab Docker Vue Nest (status-sistem.thiagosilva.dev.br)
@@ -22,8 +26,8 @@ server {
   listen [::]:443 ssl http2;
   server_name status-sistem.thiagosilva.dev.br;
 
-  ssl_certificate     /etc/letsencrypt/live/status-sistem.thiagosilva.dev.br/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/status-sistem.thiagosilva.dev.br/privkey.pem;
+  ssl_certificate     /etc/letsencrypt/live/thiagosilva.dev.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/thiagosilva.dev.br/privkey.pem;
   ssl_protocols       TLSv1.2 TLSv1.3;
   ssl_ciphers         HIGH:!aNULL:!MD5;
   ssl_prefer_server_ciphers on;
@@ -59,8 +63,8 @@ server {
   listen [::]:443 ssl http2;
   server_name api.status-sistem.thiagosilva.dev.br;
 
-  ssl_certificate     /etc/letsencrypt/live/status-sistem.thiagosilva.dev.br/fullchain.pem;
-  ssl_certificate_key /etc/letsencrypt/live/status-sistem.thiagosilva.dev.br/privkey.pem;
+  ssl_certificate     /etc/letsencrypt/live/thiagosilva.dev.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/thiagosilva.dev.br/privkey.pem;
   ssl_protocols       TLSv1.2 TLSv1.3;
   ssl_ciphers         HIGH:!aNULL:!MD5;
   ssl_prefer_server_ciphers on;

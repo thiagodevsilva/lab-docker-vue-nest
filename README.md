@@ -12,22 +12,31 @@ Sistema interno com autenticação, dashboard e CRUD de registros.
 ## Pré-requisitos
 
 - Docker e Docker Compose
-- Entrada no `/etc/hosts`:
-  ```
-  127.0.0.1 app.local api.local
-  ```
 
-## Desenvolvimento
+## Desenvolvimento (local com hot reload)
+
+O projeto usa `docker-compose.override.yml` para montar o código local nos containers. Assim, alterações em **app/frontend** e **app/backend** são aplicadas em tempo real (Vite HMR no frontend, Nest `--watch` no backend).
+
+**Pré-requisito:** adicione no `/etc/hosts` (ou `C:\Windows\System32\drivers\etc\hosts` no Windows):
+
+```
+127.0.0.1 app.local api.local
+```
+
+**Subir tudo:**
 
 ```bash
 docker compose up -d
 ```
 
-Aguardar healthchecks passarem (30-60s na primeira execução).
+Na primeira vez, aguarde os healthchecks (30–60 s). Depois:
 
-Acesse:
-- **Frontend:** http://app.local (ou http://localhost com Host: app.local)
-- **API:** http://api.local
+- **Frontend:** http://app.local:8081 (proxy Nginx na porta 8081)
+- **API:** http://api.local:8081
+
+(A porta 8081 evita conflito com a 80 ou 8080 já usadas no seu sistema.)
+
+Edite o código em `app/frontend` ou `app/backend`; as alterações entram automaticamente (recarregue o frontend no browser se o HMR não atualizar sozinho).
 
 ### Credenciais (seed)
 
