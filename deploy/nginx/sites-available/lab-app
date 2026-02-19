@@ -1,86 +1,87 @@
-# Nginx sites-available para lab-docker-vue-nest (VPS)
-# Uso: copie para /etc/nginx/sites-available/ e ative com:
-#   sudo ln -s /etc/nginx/sites-available/lab-app /etc/nginx/sites-enabled/
-#   sudo nginx -t && sudo systemctl reload nginx
-#
-# Substitua SEU_DOMINIO pelo seu domínio (ex: exemplo.com).
-# Para HTTPS com Let's Encrypt, descomente os blocos SSL e ajuste os caminhos dos certificados.
+# Configuração do Nginx para Lab Docker Vue Nest
+# Este arquivo deve ser copiado para /etc/nginx/sites-available/lab-app
+# e criado um symlink em /etc/nginx/sites-enabled/
 
-# Redirecionar HTTP -> HTTPS (descomente quando tiver SSL)
-# server {
-#     listen 80;
-#     listen [::]:80;
-#     server_name app.SEU_DOMINIO api.SEU_DOMINIO;
-#     return 301 https://$host$request_uri;
-# }
+# ============================================
+# APLICAÇÃO: Lab Docker Vue Nest (status-sistem.thiagosilva.dev.br)
+# Frontend: status-sistem.thiagosilva.dev.br (porta 9001)
+# Backend:  api.status-sistem.thiagosilva.dev.br (porta 9002)
+# ============================================
 
-# Frontend (app) - HTTP
+# redireciona http -> https
 server {
-    listen 80;
-    listen [::]:80;
-    server_name app.SEU_DOMINIO;
-
-    location / {
-        proxy_pass http://127.0.0.1:9001;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
+  listen 80;
+  listen [::]:80;
+  server_name status-sistem.thiagosilva.dev.br api.status-sistem.thiagosilva.dev.br;
+  return 301 https://$host$request_uri;
 }
 
-# Backend (API) - HTTP
+# Frontend em https
 server {
-    listen 80;
-    listen [::]:80;
-    server_name api.SEU_DOMINIO;
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name status-sistem.thiagosilva.dev.br;
 
-    location / {
-        proxy_pass http://127.0.0.1:9002;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+  ssl_certificate     /etc/letsencrypt/live/status-sistem.thiagosilva.dev.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/status-sistem.thiagosilva.dev.br/privkey.pem;
+  ssl_protocols       TLSv1.2 TLSv1.3;
+  ssl_ciphers         HIGH:!aNULL:!MD5;
+  ssl_prefer_server_ciphers on;
+
+  # Logs
+  access_log /var/log/nginx/lab-app-frontend-access.log;
+  error_log /var/log/nginx/lab-app-frontend-error.log;
+
+  # Proxy para container frontend (porta 9001)
+  location / {
+    proxy_pass http://localhost:9001;
+    proxy_http_version 1.1;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    
+    # Timeouts
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+    
+    # Cache para assets estáticos
+    proxy_cache_bypass $http_upgrade;
+  }
 }
 
-# --- HTTPS (descomente e ajuste quando usar Let's Encrypt) ---
-# server {
-#     listen 443 ssl http2;
-#     listen [::]:443 ssl http2;
-#     server_name app.SEU_DOMINIO;
-#     ssl_certificate /etc/letsencrypt/live/SEU_DOMINIO/fullchain.pem;
-#     ssl_certificate_key /etc/letsencrypt/live/SEU_DOMINIO/privkey.pem;
-#
-#     location / {
-#         proxy_pass http://127.0.0.1:9001;
-#         proxy_http_version 1.1;
-#         proxy_set_header Host $host;
-#         proxy_set_header X-Real-IP $remote_addr;
-#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#         proxy_set_header X-Forwarded-Proto $scheme;
-#         proxy_set_header Upgrade $http_upgrade;
-#         proxy_set_header Connection "upgrade";
-#     }
-# }
-#
-# server {
-#     listen 443 ssl http2;
-#     listen [::]:443 ssl http2;
-#     server_name api.SEU_DOMINIO;
-#     ssl_certificate /etc/letsencrypt/live/SEU_DOMINIO/fullchain.pem;
-#     ssl_certificate_key /etc/letsencrypt/live/SEU_DOMINIO/privkey.pem;
-#
-#     location / {
-#         proxy_pass http://127.0.0.1:9002;
-#         proxy_http_version 1.1;
-#         proxy_set_header Host $host;
-#         proxy_set_header X-Real-IP $remote_addr;
-#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#         proxy_set_header X-Forwarded-Proto $scheme;
-#     }
-# }
+# Backend (API) em https
+server {
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name api.status-sistem.thiagosilva.dev.br;
+
+  ssl_certificate     /etc/letsencrypt/live/status-sistem.thiagosilva.dev.br/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/status-sistem.thiagosilva.dev.br/privkey.pem;
+  ssl_protocols       TLSv1.2 TLSv1.3;
+  ssl_ciphers         HIGH:!aNULL:!MD5;
+  ssl_prefer_server_ciphers on;
+
+  # Logs
+  access_log /var/log/nginx/lab-app-backend-access.log;
+  error_log /var/log/nginx/lab-app-backend-error.log;
+
+  # Proxy para container backend (porta 9002)
+  location / {
+    proxy_pass http://localhost:9002;
+    proxy_http_version 1.1;
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    client_max_body_size 10m;
+    
+    # Timeouts
+    proxy_connect_timeout 60s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+  }
+}
