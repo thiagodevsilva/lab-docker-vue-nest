@@ -1,0 +1,86 @@
+# Nginx sites-available para lab-docker-vue-nest (VPS)
+# Uso: copie para /etc/nginx/sites-available/ e ative com:
+#   sudo ln -s /etc/nginx/sites-available/lab-app /etc/nginx/sites-enabled/
+#   sudo nginx -t && sudo systemctl reload nginx
+#
+# Substitua SEU_DOMINIO pelo seu domínio (ex: exemplo.com).
+# Para HTTPS com Let's Encrypt, descomente os blocos SSL e ajuste os caminhos dos certificados.
+
+# Redirecionar HTTP -> HTTPS (descomente quando tiver SSL)
+# server {
+#     listen 80;
+#     listen [::]:80;
+#     server_name app.SEU_DOMINIO api.SEU_DOMINIO;
+#     return 301 https://$host$request_uri;
+# }
+
+# Frontend (app) - HTTP
+server {
+    listen 80;
+    listen [::]:80;
+    server_name app.SEU_DOMINIO;
+
+    location / {
+        proxy_pass http://127.0.0.1:9001;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# Backend (API) - HTTP
+server {
+    listen 80;
+    listen [::]:80;
+    server_name api.SEU_DOMINIO;
+
+    location / {
+        proxy_pass http://127.0.0.1:9002;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+
+# --- HTTPS (descomente e ajuste quando usar Let's Encrypt) ---
+# server {
+#     listen 443 ssl http2;
+#     listen [::]:443 ssl http2;
+#     server_name app.SEU_DOMINIO;
+#     ssl_certificate /etc/letsencrypt/live/SEU_DOMINIO/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/SEU_DOMINIO/privkey.pem;
+#
+#     location / {
+#         proxy_pass http://127.0.0.1:9001;
+#         proxy_http_version 1.1;
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_set_header Upgrade $http_upgrade;
+#         proxy_set_header Connection "upgrade";
+#     }
+# }
+#
+# server {
+#     listen 443 ssl http2;
+#     listen [::]:443 ssl http2;
+#     server_name api.SEU_DOMINIO;
+#     ssl_certificate /etc/letsencrypt/live/SEU_DOMINIO/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/SEU_DOMINIO/privkey.pem;
+#
+#     location / {
+#         proxy_pass http://127.0.0.1:9002;
+#         proxy_http_version 1.1;
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#     }
+# }

@@ -1,0 +1,75 @@
+# Docker Compose para VPS (Nginx no host como reverse proxy)
+# Uso: docker compose -f docker-compose.vps.yml up -d
+#
+# Frontend e backend ficam em 127.0.0.1:9001 e 127.0.0.1:9002
+# para o Nginx do host fazer proxy. Banco não é exposto.
+
+services:
+  frontend:
+    build:
+      context: ./app/frontend
+      dockerfile: Dockerfile
+    image: lab-docker-vue-nest-frontend
+    container_name: lab-frontend
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "127.0.0.1:9001:5173"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5173 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - web
+
+  backend:
+    build:
+      context: ./app/backend
+      dockerfile: Dockerfile
+    image: lab-docker-vue-nest-backend
+    container_name: lab-backend
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/labapp
+      - JWT_SECRET=${JWT_SECRET:-altere-em-producao}
+    ports:
+      - "127.0.0.1:9002:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - web
+
+  db:
+    image: postgres:16-alpine
+    container_name: lab-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=labapp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - web
+
+networks:
+  web:
+    driver: bridge
+
+volumes:
+  pgdata:

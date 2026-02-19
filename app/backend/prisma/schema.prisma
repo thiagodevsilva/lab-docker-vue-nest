@@ -1,0 +1,40 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum Status {
+  PENDENTE
+  EM_ANDAMENTO
+  CONCLUIDO
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String     @map("password_hash")
+  role         Role       @default(USER)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  registros    Registro[]
+}
+
+model Registro {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String
+  telefone  String
+  status    Status   @default(PENDENTE)
+  ownerId   String   @map("owner_id")
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+}
