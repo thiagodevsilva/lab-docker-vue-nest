@@ -51,6 +51,15 @@ Se o reload falhar, veja o erro com: `sudo nginx -t` (mostra o motivo).
    docker compose -f docker-compose.vps.yml up -d
    ```
 
+3. **Primeira vez (ou banco novo):** crie as tabelas e o usuário admin:
+
+   ```bash
+   docker compose -f docker-compose.vps.yml run --rm backend npx prisma migrate deploy
+   docker compose -f docker-compose.vps.yml run --rm backend npx prisma db seed
+   ```
+
+   O seed cria o usuário **admin@lab.local** com senha **admin123**. Sem isso o login não funciona.
+
 O frontend fica em `localhost:9001` e o backend em `localhost:9002`; o Nginx do host faz o proxy.
 
 ### Site não abre no navegador (status-sistem.thiagosilva.dev.br)

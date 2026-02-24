@@ -13,5 +13,7 @@ export default defineConfig({
       'status-sistem.thiagosilva.dev.br',
       'api.status-sistem.thiagosilva.dev.br',
     ],
+    // Desativa HMR em produção (evita erro de WebSocket em localhost ao acessar pelo domínio)
+    hmr: process.env.NODE_ENV === 'production' ? false : true,
   },
 })
