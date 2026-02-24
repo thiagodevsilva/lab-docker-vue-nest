@@ -7,6 +7,11 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    allowedHosts: ['app.local', 'api.local'],
+    allowedHosts: [
+      'app.local',
+      'api.local',
+      'status-sistem.thiagosilva.dev.br',
+      'api.status-sistem.thiagosilva.dev.br',
+    ],
   },
 })

@@ -53,6 +53,32 @@ Se o reload falhar, veja o erro com: `sudo nginx -t` (mostra o motivo).
 
 O frontend fica em `localhost:9001` e o backend em `localhost:9002`; o Nginx do host faz o proxy.
 
+### Site não abre no navegador (status-sistem.thiagosilva.dev.br)
+
+Rode na VPS e confira cada passo:
+
+```bash
+# 1. Containers respondem nas portas?
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:9001
+curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:9002/health
+# Esperado: 200 em ambos
+
+# 2. Nginx está com o site habilitado?
+ls -la /etc/nginx/sites-enabled/ | grep lab
+
+# 3. Nginx aceita o server_name?
+curl -sI -H "Host: status-sistem.thiagosilva.dev.br" http://127.0.0.1
+# Esperado: HTTP/1.1 301 ou 200 (ou 302)
+
+# 4. Config do Nginx está ok?
+sudo nginx -t
+```
+
+- Se (1) falhar: veja logs do container, ex.: `docker compose -f docker-compose.vps.yml logs frontend`.
+- Se (2) não mostrar o lab: crie o symlink (passo 3 do README).
+- Se (3) falhar: confira `server_name` no config e se o arquivo em sites-available está certo.
+- Confira DNS: `dig status-sistem.thiagosilva.dev.br` ou no navegador se o IP é o da VPS.
+
 ### Erro "address already in use" / "failed to bind host port 80"
 
 Você subiu o compose **errado** (com proxy). Na VPS não use o proxy em container. Faça:
