@@ -62,6 +62,15 @@ Se o reload falhar, veja o erro com: `sudo nginx -t` (mostra o motivo).
 
 O frontend fica em `localhost:9001` e o backend em `localhost:9002`; o Nginx do host faz o proxy.
 
+**Depois de alterar código (ex.: frontend ou backend):** reconstruir e subir de novo. Só o que mudou precisa de rebuild; subir o stack inteiro também funciona e garante que está tudo em sincronia:
+
+```bash
+cd /opt/lab-docker-vue-nest
+git pull
+docker compose -f docker-compose.vps.yml build --no-cache
+docker compose -f docker-compose.vps.yml up -d
+```
+
 ### Site não abre no navegador (status-sistem.thiagosilva.dev.br)
 
 Rode na VPS e confira cada passo:

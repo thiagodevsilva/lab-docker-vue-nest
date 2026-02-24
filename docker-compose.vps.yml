@@ -13,6 +13,7 @@ services:
     container_name: lab-frontend
     environment:
       - NODE_ENV=production
+      - VITE_HMR_DISABLE=1
     ports:
       - "127.0.0.1:9001:5173"
     healthcheck:

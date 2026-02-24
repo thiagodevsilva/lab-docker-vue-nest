@@ -13,7 +13,7 @@ export default defineConfig({
       'status-sistem.thiagosilva.dev.br',
       'api.status-sistem.thiagosilva.dev.br',
     ],
-    // Desativa HMR em produção (evita erro de WebSocket em localhost ao acessar pelo domínio)
-    hmr: process.env.NODE_ENV === 'production' ? false : true,
+    // Desativa HMR na VPS (variável definida no docker-compose.vps.yml) para evitar erro de WebSocket
+    hmr: process.env.VITE_HMR_DISABLE === '1' ? false : true,
   },
 })
